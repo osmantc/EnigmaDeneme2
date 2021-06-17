@@ -16,11 +16,8 @@ namespace EnigmaApplication2
             int firstHindex = girilen.IndexOf('H');
 
             int baslanacakSayi = firstHindex + 1;
-            char[] girilenArray = girilen.ToArray();
-            List<int> hyeri = new List<int>();
-            List<int> lyeri = new List<int>();
 
-            //LLHLLHLLH
+            char[] girilenArray = girilen.ToArray();
 
             int maxSayi = girilenArray.Length + 1;
 
@@ -28,6 +25,9 @@ namespace EnigmaApplication2
 
             List<int> sayiHaznesi = new List<int>(Enumerable.Range(1, maxSayi));
 
+            bool patladiMi = false;
+
+            List<List<int>> bannedList = new List<List<int>>();
 
 
             for (int i = baslanacakSayi; i > 0; i--)
@@ -36,100 +36,93 @@ namespace EnigmaApplication2
                 sayiHaznesi.Remove(i);
             }
 
+
+
+            for (int i = 0; i < maxSayi - baslanacakSayi; i++)
+            {
+                List<int> list = new List<int>();
+
+                bannedList.Add(list);
+            }
+
+
+
             for (int i = firstHindex; i < girilenArray.Length; i++)
             {
 
                 if (girilenArray[i] == 'H')
-                    hyeri.Add(i - firstHindex);
-                else
-                    lyeri.Add(i - firstHindex);
-                lyeri.Add(i - firstHindex);
+                {
 
-            }
+                    int yenideger = 0;
+
+                    sayiHaznesi = sayiHaznesi.OrderBy(x => x).ToList();
+
+                    List<int> secilebilirAlan = sayiHaznesi.Where(x => bannedList[i - firstHindex].Contains(x) == false).ToList();
+
+                    if (secilebilirAlan.Count > 0)
+                    {
+
+                        yenideger = secilebilirAlan.First();
+
+                        sayiHaznesi.Remove(yenideger);
+
+                        sonucList.Add(yenideger);
+
+                    }
+                    else
+                    {
+                        patladiMi = true;
+
+                        int banlanacakValue = sonucList.ElementAt(i);
+
+                        sonucList.Remove(banlanacakValue);
+
+                        if (i - firstHindex - 1 >= 0)
+                            bannedList[i - firstHindex - 1].Add(banlanacakValue);
+
+                        sayiHaznesi.Add(banlanacakValue);
+                    }
+                }
+                else  //'L' ise
+                {
+                    int yenideger = 0;
+
+                    sayiHaznesi = sayiHaznesi.OrderByDescending(x => x).ToList();
+
+                    List<int> secilebilirAlan = sayiHaznesi.Where(x => bannedList[i - firstHindex].Contains(x) == false && x < sonucList.Last()).ToList();
 
 
-            List<List<int>> possibilityList = new List<List<int>>();
+                    if (secilebilirAlan.Count > 0)
+                    {
+                        yenideger = secilebilirAlan.First();
 
-            for (int i = 0; i < maxSayi - baslanacakSayi; i++)
-            {
-                List<int> list = new List<int>(Enumerable.Range(baslanacakSayi + 1, maxSayi));
-                possibilityList.Add(list);
-            }
+                        sayiHaznesi.Remove(yenideger);
 
-            bool patladiMi = false;
+                        sonucList.Add(yenideger);
 
-            List<int> minDegerlerH = new List<int>();
-            //List<int> minDegerlerL = new List<int>();
+                    }
+                    else
+                    {
+                        patladiMi = true;
 
-            minDegerlerH.Add(sonucList.Last());
+                        int banlanacakValue = sonucList.ElementAt(i);
 
-            for (int i = firstHindex; i < girilenArray.Length; i++)
-            {
+                        sonucList.Remove(banlanacakValue);
+
+                        if (i - firstHindex - 1 >= 0)
+                            bannedList[i - firstHindex - 1].Add(banlanacakValue);
+
+                        sayiHaznesi.Add(banlanacakValue);
+                    }
+
+
+                }
 
                 if (i >= firstHindex && patladiMi)
                 {
                     i = i - 2;
                     patladiMi = false;
                 }
-
-                if (girilenArray[i] == 'H')
-                {
-
-                    //int currentdeger = sonucList.Last();
-                    int yenideger = 0;
-
-                    if (possibilityList[i - firstHindex].Any(x => x > minDegerlerH.Last()))
-                    {
-                        yenideger = possibilityList[i - firstHindex].First(x => x > minDegerlerH.Last());
-
-                        //foreach (var index in hyeri)
-                        //{
-                        //    possibilityList[index].Remove(yenideger);
-                        //}
-
-                        possibilityList[i - firstHindex].Remove(yenideger);
-
-                        sonucList.Add(yenideger);
-
-                        minDegerlerH.Add(yenideger);
-                    }
-                    else
-                    {
-                        patladiMi = true;
-                        sonucList.Remove(sonucList.ElementAt(i));
-                    }
-                }
-                else  //'L' ise
-                {
-                    //int currentdeger = sonucList.Last();
-                    int yenideger = 0;
-
-
-                    if (possibilityList[i - firstHindex].Any(x => x < sonucList.Last()))
-                    {
-                        yenideger = possibilityList[i - firstHindex].FindLast(x => x < sonucList.Last());
-
-                        //foreach (var index in lyeri)
-                        //{
-                        //    possibilityList[index].Remove(yenideger);
-                        //}
-
-                        possibilityList[i - firstHindex].Remove(yenideger);
-
-                        sonucList.Add(yenideger);
-
-                        //minDegerlerL.Add(yenideger);
-                    }
-                    else
-                    {
-                        patladiMi = true;
-                        sonucList.Remove(sonucList.ElementAt(i));
-                    }
-
-
-                }
-
-
             }
 
             foreach (var item in sonucList)
